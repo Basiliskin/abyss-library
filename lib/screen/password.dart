@@ -67,7 +67,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
           ),
           SizedBox(
               height: 60,
-              width: double.infinity,
+              width: 180,
               child: RaisedButton(
                 child: Text("Enter"),
                 onPressed: () {

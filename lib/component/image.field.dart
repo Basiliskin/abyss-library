@@ -14,12 +14,11 @@ class BinaryImage extends StatelessWidget {
   BinaryImage(this.data);
   @override
   Widget build(BuildContext context) {
-    return Image.memory(
-      data,
-      fit: BoxFit.fitWidth,
-      width: 120,
-      height: 60,
-    );
+    return SingleChildScrollView(
+        child: SafeArea(
+            child: Column(children: <Widget>[
+      Container(width: 280, child: Image.memory(data))
+    ])));
   }
 }
 
@@ -106,10 +105,10 @@ class _DriverImageComponentState extends State<DriverImageComponent> {
         ),
       ));
     return Row(children: <Widget>[
-      Padding(padding: EdgeInsets.only(left: 5.0, right: 5.0)),
+      Padding(padding: EdgeInsets.only(left: 2.0, right: 2.0)),
       GestureDetector(
           onTap: () => {saveImage()},
-          child: Stack(alignment: Alignment.bottomRight, children: items))
+          child: Stack(alignment: Alignment.bottomLeft, children: items))
     ]);
   }
 }
@@ -165,7 +164,7 @@ class _ImageFieldState extends State<ImageField> {
             child: FloatingActionButton(
               backgroundColor: BUTTON_COLOR,
               child: Icon(
-                Icons.add,
+                Icons.camera,
                 color: Colors.black,
               ),
               onPressed: () => _addImage(),
@@ -181,13 +180,28 @@ class _ImageFieldState extends State<ImageField> {
   }
 
   _addImage() async {
-    final pickedFile = await widget.picker.getImage(source: ImageSource.camera);
+    final pickedFile = await widget.picker.getImage(
+        source: ImageSource.camera,
+        maxHeight: 768.0,
+        maxWidth: 1024.0,
+        imageQuality: 50);
     widget.isLoading(true);
     if (pickedFile != null) {
       File image = File(pickedFile.path);
+      //int size = image.lengthSync();
+      //print(size);
       String fileId = await widget.service.uploadToFolder('abyss-image', image);
       if (fileId != null)
         setState(() => {imgList.add(fileId), widget.updateItem(imgList)});
+      else
+        await Fluttertoast.showToast(
+            msg: "Save failed",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red[100],
+            textColor: Colors.black,
+            fontSize: 16.0);
       print(fileId);
     } else {
       print('No image selected.');
@@ -224,7 +238,7 @@ class _ImageFieldState extends State<ImageField> {
     return SingleChildScrollView(
         child: SafeArea(
             child: Column(children: <Widget>[
-      Container(width: 320, height: 80, child: _content(context))
+      Container(width: 320, height: 160, child: _content(context))
     ])));
   }
 }

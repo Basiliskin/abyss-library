@@ -35,6 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Sink<List<Map>> get sinkItems => _controller.sink;
   Sink<List<ListIntValue>> get sinkLabels => _controllerLabel.sink;
 
+  _sortItems(a, b) {
+    final isFavoriteA = safeGet(a, 'isFavorite', false);
+    final isFavoriteB = safeGet(b, 'isFavorite', false);
+    if (isFavoriteA != isFavoriteB)
+      return isFavoriteA ? -1 : isFavoriteB ? 1 : 0;
+
+    int timeA = safeGet(a, 'time', 0);
+    int timeB = safeGet(b, 'time', 0);
+    return timeB - timeA;
+  }
+
   List<Map> _filteredData() {
     List<Map> res =
         mapList.where((element) => _filter.filtered(element)).toList();
@@ -46,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final labels =
         dic.entries.map((e) => ListIntValue(e.key, e.value)).toList();
     labels.sort((a, b) => a.name.compareTo(b.name));
+    res.sort((a, b) => _sortItems(a, b));
     sinkLabels.add(labels);
     sinkItems.add(res);
     this.labels = labels;
@@ -94,7 +106,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _onSaveItem(Map newData) {
-    final valid = "itemId,title,label,href,description,custom,image".split(',');
+    final valid = "itemId,title,label,href,description,custom,image,isFavorite"
+        .split(',');
     Map ndata = {};
     newData.forEach((key, value) {
       if (valid.indexOf(key) >= 0) ndata[key] = value;
@@ -104,6 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int current = mapList
         .indexWhere((element) => safeGet(element, "itemId", "") == itemId);
     ndata["itemId"] = itemId;
+    ndata["time"] = DateTime.now().microsecondsSinceEpoch;
     setState(() {
       if (current < 0) {
         mapList.add(ndata);
@@ -242,13 +256,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  _homeSetFavorite(Map itemData) {
+    itemData['isFavorite'] = !safeGet(itemData, 'isFavorite', false);
+    _onSaveItem(itemData);
+  }
+
   buildContent(BuildContext context, BoxConstraints viewportConstraints) {
     final Map<String, dynamic> screenData = {"title": "Abyss Library  "};
     final String title = screenData["title"];
     final editItem = (Map data) => _showDialog(context, data);
     List<Widget> widgetList = new List<Widget>();
     widgetList.add(HomeList(mapList, _homeListRemoveItem, editItem,
-        _searchByLabelName, _controller.stream));
+        _searchByLabelName, _controller.stream, _homeSetFavorite));
 
     final ModalRoundedProgressBar progressBar = ModalRoundedProgressBar(
         textMessage: screenData["loading"] ?? "Loading");
@@ -271,6 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }));
     FabCircularMenu menu = menuItems.length > 0
         ? FabCircularMenu(
+            ringColor: MENU_COLOR,
             shouldTriggerChange: changeNotifier.stream,
             ringDiameter: 200,
             transform: Matrix4.translationValues(-transformMenu, 0.0, 0.0),

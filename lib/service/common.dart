@@ -4,10 +4,15 @@ import 'package:flutter/material.dart';
 const THEME_COLOR = 0xFFe0cc8d;
 const LIST_HEADER_COLOR = Color(THEME_COLOR);
 const PROGRESSBAR_COLOR = Color(THEME_COLOR);
+const MENU_COLOR = Color(THEME_COLOR);
 const BUTTON_COLOR = Color(THEME_COLOR);
 const LABEL_ODD_COLOR = Color(0xFFe0d9c3);
 const LABEL_EVEN_COLOR = Color(0xFFe0cc8d);
 const LIST_BORDER_COLOR = Color(0xFFe0cc8d);
+const double DLIST_ITEM_HEIGHT = 180;
+const double DLIST_ITEM_WIDTH = 80;
+const STAR_COLOR = Colors.orangeAccent;
+const STAR_NOT_COLOR = Color(0xFFe0cc8d);
 
 safeGet(Map data, String key, dynamic defaultValue) {
   final keys = key.split('.');

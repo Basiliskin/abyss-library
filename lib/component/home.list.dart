@@ -7,8 +7,9 @@ class HomeList extends StatefulWidget {
   final Function removeItem;
   final Function editItem;
   final Function onSeachByLabel;
+  final Function onSetFavorite;
   HomeList(this.mapList, this.removeItem, this.editItem, this.onSeachByLabel,
-      this.stream);
+      this.stream, this.onSetFavorite);
 
   @override
   _HomeListState createState() => _HomeListState();
@@ -23,8 +24,8 @@ class _HomeListState extends State<HomeList> {
 
   _load(List<Map> newData) {
     items.clear();
-    (newData ?? widget.mapList)
-        .forEach((data) => {items.add(ListItemData(data, widget._search))});
+    (newData ?? widget.mapList).forEach((data) =>
+        {items.add(ListItemData(data, widget._search, widget.onSetFavorite))});
   }
 
   @override
@@ -68,8 +69,10 @@ class _HomeListState extends State<HomeList> {
                   direction: Axis.vertical,
                   children: [control],
                 ));
-            return GestureDetector(
-                onTap: () => {widget.editItem(itemData)}, child: component);
+            return InkWell(
+                //behavior: HitTestBehavior.translucent,
+                onTap: () => {widget.editItem(itemData)},
+                child: component);
           }),
     );
   }

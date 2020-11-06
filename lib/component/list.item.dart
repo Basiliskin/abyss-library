@@ -98,7 +98,9 @@ abstract class ListItem {
 class ListItemComponent extends StatelessWidget {
   final Map data;
   final Function(String) searchByLabel;
-  ListItemComponent({Key key, this.data, this.searchByLabel}) : super(key: key);
+  final Function(Map) setFavorite;
+  ListItemComponent({Key key, this.data, this.searchByLabel, this.setFavorite})
+      : super(key: key);
 
   Widget buildDesc(BuildContext context) {
     List labels = data.containsKey("label") ? data["label"] : [];
@@ -108,8 +110,9 @@ class ListItemComponent extends StatelessWidget {
         : "no description";
     String name = data.containsKey("title") ? data["title"] : "undefined";
     List<Widget> children = <Widget>[];
-
-    children.add(Text(
+    final isFavorite = safeGet(data, 'isFavorite', false);
+    final title = Flexible(
+        child: Text(
       toBeginningOfSentenceCase(name),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -121,10 +124,30 @@ class ListItemComponent extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
     ));
+    final badge = Badge(
+        alignment: Alignment(1.3, 0.3),
+        badgeColor: isFavorite ? STAR_COLOR : STAR_NOT_COLOR,
+        shape: BadgeShape.circle,
+        borderRadius: 10,
+        toAnimate: false,
+        badgeContent: Icon(Icons.star));
+
+    int time = safeGet(data, 'time', 0);
+    DateTime dd = new DateTime.fromMicrosecondsSinceEpoch(time);
+    String formattedDate =
+        time != 0 ? DateFormat('yyyy-MM-dd hh:mm').format(dd) : "";
+
+    children.add(Row(
+      children: [
+        GestureDetector(onTap: () => {setFavorite(data)}, child: badge),
+        Padding(padding: EdgeInsets.only(right: 10)),
+        title
+      ],
+    ));
     children.add(Padding(padding: EdgeInsets.only(bottom: 10)));
     children.add(Text(
-      description,
-      maxLines: 4,
+      formattedDate,
+      maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         fontSize: 10.0,
@@ -132,7 +155,21 @@ class ListItemComponent extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
     ));
+
+    children.add(Padding(padding: EdgeInsets.only(bottom: 10)));
+    children.add(Text(
+      description,
+      maxLines: 3,
+      overflow: TextOverflow.ellipsis,
+      style: const TextStyle(
+        fontSize: 10.0,
+        color: Colors.black54,
+        fontWeight: FontWeight.bold,
+      ),
+    ));
+
     double cWidth = MediaQuery.of(context).size.width * 0.8;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -181,7 +218,7 @@ class ListItemComponent extends StatelessWidget {
                       ]);
                     })),
           ),
-        ),
+        )
       ],
     );
   }
@@ -195,8 +232,8 @@ class ListItemComponent extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2.0),
         child: SizedBox(
-          height: 140,
-          width: 80,
+          height: DLIST_ITEM_HEIGHT,
+          width: DLIST_ITEM_WIDTH,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -217,6 +254,7 @@ class ListItemComponent extends StatelessWidget {
 class ListItemData implements ListItem {
   final Map data;
   final Function(String) searchByLabel;
+  final Function(Map) setFavorite;
   getAttribute(String name, String defaultValue) {
     return data.containsKey(name) ? data[name] : defaultValue;
   }
@@ -232,10 +270,11 @@ class ListItemData implements ListItem {
     });
   }
 
-  ListItemData(this.data, this.searchByLabel);
+  ListItemData(this.data, this.searchByLabel, this.setFavorite);
 
   Widget buildItem(BuildContext context) {
-    return ListItemComponent(data: data, searchByLabel: searchByLabel);
+    return ListItemComponent(
+        data: data, searchByLabel: searchByLabel, setFavorite: setFavorite);
   }
 
   mapLabels(Map<String, int> dic) {
