@@ -71,6 +71,7 @@ class JsonSchema extends StatefulWidget {
 
 class _CoreFormState extends State<JsonSchema> {
   dynamic formGeneral;
+  Map _form;
   _init() {
     this.formGeneral = widget.formMap;
   }
@@ -157,6 +158,13 @@ class _CoreFormState extends State<JsonSchema> {
   _build(Map<String, dynamic> item) {
     final focusNode = safeGet(item, 'focusNode', null);
     final itemType = jsonSchemaTypes[item['type']];
+    if (_form != null) {
+      final key = safeGet(item, 'key', '');
+      if (_form.containsKey(key)) {
+        item['value'] = _form[key] ?? item['value'];
+      }
+    }
+
     try {
       switch (itemType) {
         case JsonSchemaType.Custom:
@@ -454,7 +462,6 @@ class _CoreFormState extends State<JsonSchema> {
     final fields = safeGet(formGeneral, 'fields', []);
     for (var count = 0; count < fields.length; count++) {
       Map item = fields[count];
-
       if (jsonSchemaTypes.containsKey(safeGet(item, 'type', '-')))
         listWidget.add(_build(item));
       else
@@ -477,9 +484,19 @@ class _CoreFormState extends State<JsonSchema> {
     return listWidget;
   }
 
+  _formData() {
+    final fields = safeGet(formGeneral, 'fields', []);
+    Map data = {};
+    fields.forEach((field) =>
+        {data[safeGet(field, 'key', '')] = safeGet(field, 'value', '')});
+    _form = data;
+    return data;
+  }
+
   void _handleChanged(item) {
     setState(() {
-      widget.onChanged({"form": formGeneral, "item": item});
+      widget
+          .onChanged({"form": formGeneral, "item": item, "data": _formData()});
     });
   }
 
@@ -487,6 +504,7 @@ class _CoreFormState extends State<JsonSchema> {
 
   @override
   Widget build(BuildContext context) {
+    print('****build****');
     return Form(
       autovalidate: safeGet(formGeneral, 'autoValidated', false),
       key: _formKey,

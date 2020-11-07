@@ -75,6 +75,7 @@ class _ItemFormControllerState extends State<ItemFormController> {
         'type': 'Custom',
         'label': 'Label',
         'hiddenLabel': true,
+        'required': false,
         'value': safeGet(data, "label", []),
         'custom': (item, _validator, _handleChanged) =>
             LabelFieldController(item, _handleChanged, widget.labels)
@@ -93,7 +94,7 @@ class _ItemFormControllerState extends State<ItemFormController> {
         'type': 'TextArea',
         'label': 'Description',
         'placeholder': "Description",
-        'required': true,
+        'required': false,
         'hiddenLabel': true,
         'value': safeGet(data, "description", "")
       }

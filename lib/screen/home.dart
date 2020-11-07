@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  _buildActions(List<Widget> filterComponent) {
+  _addItem(BuildContext context) {
     final data = {
       "id": getRandomString(16),
       "title": "",
@@ -211,6 +211,11 @@ class _HomeScreenState extends State<HomeScreen> {
       "label": []
     };
     data["itemId"] = generateMd5(json.encode(data));
+    _onSaveItem(data);
+    _showDialog(context, data);
+  }
+
+  _buildActions(BuildContext context, List<Widget> filterComponent) {
     if (_isSearching) {
       filterComponent.add(IconButton(
         icon: const Icon(Icons.clear),
@@ -234,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ));
       filterComponent.add(IconButton(
         icon: const Icon(Icons.add),
-        onPressed: () => {_showDialog(context, data)},
+        onPressed: () => {_addItem(context)},
       ));
       if (!_filter.isEmpty())
         filterComponent.add(IconButton(
@@ -273,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
         textMessage: screenData["loading"] ?? "Loading");
 
     List<Widget> filterComponent = <Widget>[];
-    _buildActions(filterComponent);
+    _buildActions(context, filterComponent);
     final double transformMenu = -8.0;
     List<Widget> menuItems = <Widget>[];
     menuItems.add(IconButton(
@@ -341,6 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
               data["itemId"] = generateMd5(json.encode(data)),
               mapList.add(Map.from(data))
             });
+        _filteredData();
       }
     }
     return LayoutBuilder(
